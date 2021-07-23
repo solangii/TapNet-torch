@@ -1,24 +1,20 @@
-import os
 import sys
 sys.path.append('../')
 import argparse
 
-import numpy as np
-
-from model import TapNet
+from model.TapNet import TapNet
 from utils import str2bool, experiment_name_generator
 from data import data_loader
 
 import torch
 import torch.nn as nn
-import torch.optim as optim
 import torch.backends.cudnn as cudnn
 
 def parser_args():
     parser = argparse.ArgumentParser()
 
     # data parameter
-    parser.add_argument('--data_root', type=str, default='data/', help='')
+    parser.add_argument('--data_root', type=str, default='/home/miil/Datasets/TapNet/', help='')
     parser.add_argument('--dataset', type=str, default='mini', help='Dataset')
 
     # Few-shot parameter
@@ -44,84 +40,6 @@ def parser_args():
 
     return config
 
-def train(model, config, dataloader, exp_name):
-    loss_h = []
-    accuracy_h_val = []
-    accuracy_h_test = []
-
-    acc_best = 0
-    epoch_best = 0
-
-    for idx, episode in enumerate(dataloader['meta_train']):
-        support_data, support_label = episode['train']
-        query_data, query_label = episode['test']
-        support_data, support_label = support_data.to(config.device), support_label.to(config.device)
-        query_data, query_label = query_data.to(config.device), query_label.to(config.device)
-
-        loss = model.train(support_data, support_label) # 맞나
-
-        # logging
-        # --------------------------------
-        loss_h.extend([loss.tolist()])
-        if idx % 50 ==0:
-            print("Episode: %d, Train Loss: %f "%(idx, loss))
-
-        if idx!=0 and idx%500 ==0:
-            print("Evaluation in Validation data")
-            scores = []
-
-            for idx, episode in enumerate(dataloader['meta_val']): #몇개 돌지 정해두기
-                accs = model.evaludate(support_data, support_label)
-                accs_ = [cuda.to_cpu(acc) for acc in accs] # 이거머지
-                score = np.asarray(accs_, dtype=int) # 이거머지
-                scores.append(score)
-
-            print(('Accuracy 5 shot ={:.2f}%').format(100*np.mean(np.array(scores))))
-            accuracy_t = 100*np.mean(np.array(scores))
-
-            if acc_best < accuracy_t:
-                acc_best = accuracy_t
-                epoch_best = idx
-                # save model Todo
-                # 뭐시l save npz
-
-            accuracy_h_val.extend([accuracy_t.tolist()])
-            del(accs) # 이거머지
-            del(accs_)
-            del(accuracy_t)
-
-        if idx!=0 and idx%config.lrstep==0 and config.lrdecay:
-            model.decay_learning_rate(0.1)
-
-def eval(model, config, dataloader):
-    accuracy_h5 = []
-
-    #load model
-
-    print("Evaluating the best 5shot model...")
-    for i in range(50):
-        scores =[]
-        for idx, episode in enumerate(dataloader['meta_test']):
-            support_data, support_label = episode['train']
-            query_data, query_label = episode['test']
-            support_data, support_label = support_data.to(config.device), support_label.to(config.device)
-            query_data, query_label = query_data.to(config.device), query_label.to(config.device)
-
-            accs = model.evaluate(support_data, support_label)
-            accs_ = [cuda.to_cpu(acc) for acc in accs] #이거머지
-            score = np.asarray(accs_, dtype=int)
-            scores.append(score)
-        accuracy_t = 100*np.mean(np.array(scores))
-        accuracy_h5.extend([accuracy_t.tolist()])
-        print(('600 episodes with 15-query accuracy: 5-shot = {:.2f}%').format(accuracy_t))
-
-        del(accs)
-        del(accs_)
-        del(accuracy_t)
-
-        #sio.savemat(savefile_name, {'accuracy_h_val':accuracy_h_val, 'accuracy_h_test':accuracy_h_test, 'epoch_best':epoch_best,'acc_best':acc_best, 'accuracy_h5':accuracy_h5})
-
-    print(('Accuracy_test 5 shot ={:.2f}%').format(np.mean(accuracy_h5)))
 
 def main():
     config = parser_args()
@@ -129,13 +47,13 @@ def main():
     dataloader = data_loader(config)
 
     model = TapNet(config, dataloader, exp_name)
-    model.to(config.device)
+    model = model.to(config.device)
 
-    if config.device =='cuda':
+    if config.device == 'cuda':
         model = nn.DataParallel(model)
         cudnn.benchmark = True
 
-    train(model, config, dataloader, exp_name)
+    model.train()
 
 
 if __name__ == '__main__':

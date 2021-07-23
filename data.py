@@ -1,4 +1,4 @@
-from torchmeta.datasets.helpers import miniimagenet
+from torchmeta.datasets.helpers import miniimagenet, omniglot, tieredimagenet
 from torchmeta.utils.data import BatchMetaDataLoader
 
 import torchvision
@@ -7,6 +7,8 @@ import torch
 
 
 # torch meta : https://github.com/tristandeleu/pytorch-meta
+
+#Todo tiered, omniglot normalize 값
 
 def data_loader(config):
     if config.dataset == 'mini':
@@ -33,6 +35,36 @@ def data_loader(config):
             transforms.Normalize((),())
         ])
 
+        train_set = tieredimagenet(config.data_root, ways=config.n_class_train, shots=config.n_shot,
+                                 test_shots=config.n_query_train,
+                                 meta_split='train', shuffle=True, download=True,
+                                 transform=transform)
+        val_set = tieredimagenet(config.data_root, ways=config.n_class_test, shots=config.n_shot,
+                               test_shots=config.n_query_test,
+                               meta_split='val', shuffle=True, download=True,
+                               transform=transform)
+        test_set = tieredimagenet(config.data_root, ways=config.n_class_test, shots=config.n_shot,
+                                test_shots=config.n_query_test,
+                                meta_split='test', shuffle=True, download=True,
+                                transform=transform)
+
+    elif config.dataset == 'omniglot':
+        transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((), ())
+        ])
+        train_set = omniglot(config.data_root, ways=config.n_class_train, shots=config.n_shot,
+                                 test_shots=config.n_query_train,
+                                 meta_split='train', shuffle=True, download=True,
+                                 transform=transform)
+        val_set = omniglot(config.data_root, ways=config.n_class_test, shots=config.n_shot,
+                               test_shots=config.n_query_test,
+                               meta_split='val', shuffle=True, download=True,
+                               transform=transform)
+        test_set = omniglot(config.data_root, ways=config.n_class_test, shots=config.n_shot,
+                                test_shots=config.n_query_test,
+                                meta_split='test', shuffle=True, download=True,
+                                transform=transform)
     else:
         raise ValueError
 
