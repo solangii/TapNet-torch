@@ -14,7 +14,7 @@ def parser_args():
     parser = argparse.ArgumentParser()
 
     # data parameter
-    parser.add_argument('--data_root', type=str, default='/home/miil/Datasets/TapNet/', help='')
+    parser.add_argument('--data_root', type=str, default='data/', help='')
     parser.add_argument('--dataset', type=str, default='mini', help='Dataset')
 
     # Few-shot parameter
@@ -28,6 +28,7 @@ def parser_args():
     parser.add_argument('--dim', type=int, default=512, help='Dimension of features')
     parser.add_argument('--n_episodes', type=int, default=50000, help = 'Number of train episodes')
     parser.add_argument('--wd_rate', type=float, default=5e-4, help='Weight decay rate in Adam optimizer')
+    parser.add_argument('--lr', type=float, default=1e-3)
     parser.add_argument('--lrdecay', type=str2bool, default=True)
     parser.add_argument('--lrstep', type=int, default=40000)
     parser.add_argument('--batch_size', type=int, default=1)
@@ -47,11 +48,6 @@ def main():
     dataloader = data_loader(config)
 
     model = TapNet(config, dataloader, exp_name)
-    model = model.to(config.device)
-
-    if config.device == 'cuda':
-        model = nn.DataParallel(model)
-        cudnn.benchmark = True
 
     model.train()
 
