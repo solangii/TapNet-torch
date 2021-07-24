@@ -8,7 +8,6 @@ from data import data_loader
 
 import torch
 import torch.nn as nn
-import torch.backends.cudnn as cudnn
 
 def parser_args():
     parser = argparse.ArgumentParser()
@@ -27,11 +26,11 @@ def parser_args():
     # train parameter
     parser.add_argument('--dim', type=int, default=512, help='Dimension of features')
     parser.add_argument('--n_episodes', type=int, default=50000, help = 'Number of train episodes')
+    parser.add_argument('--meta_batch', type=int, default=1, help='Meta-batch size (number of episodes, but not used in here)')
     parser.add_argument('--wd_rate', type=float, default=5e-4, help='Weight decay rate in Adam optimizer')
     parser.add_argument('--lr', type=float, default=1e-3)
-    parser.add_argument('--lrdecay', type=str2bool, default=True)
-    parser.add_argument('--lrstep', type=int, default=40000)
-    parser.add_argument('--batch_size', type=int, default=1)
+    parser.add_argument('--lr_decay', type=str2bool, default=True)
+    parser.add_argument('--lr_step', type=int, default=40000)
 
     # save option
     parser.add_argument('--save_root', type=str, default='save/')

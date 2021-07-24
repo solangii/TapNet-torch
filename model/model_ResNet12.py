@@ -50,13 +50,13 @@ class EmbeddingNet(nn.Module):
                                      nn.BatchNorm2d(512))
         self.pool4 = nn.Sequential(nn.MaxPool2d(kernel_size=2),
                                    nn.Dropout2d(p=0.2),
-                                   nn.AvgPool2d(kernel_size=2)) # 6dmfh
+                                   nn.AvgPool2d(kernel_size=5)) # 6dmfh
 
         self.phi = nn.Linear(dim, n_class_train)
 
     def forward(self, x):
-        x = x.view(-1, 84, 84, 3)
-        x = x.permute(0, 3, 1, 2).contiguous()  # shape = (25, 3, 84, 84)
+        #x = x.view(-1, 84, 84, 3)
+        #x = x.permute(0, 3, 1, 2).contiguous()  # shape = (25, 3, 84, 84)
 
         out1 = self.pool1(F.relu(self.conv1(x) + self.conv1_r(x)))
         out2 = self.pool2(F.relu(self.conv2(out1) + self.conv2_r(out1)))

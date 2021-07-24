@@ -68,9 +68,9 @@ def data_loader(config):
     else:
         raise ValueError
 
-    train_loader = BatchMetaDataLoader(train_set, batch_size=config.batch_size, shuffle=True)
-    val_loader = BatchMetaDataLoader(val_set, batch_size = config.batch_size, shuffle=True)
-    test_loader = BatchMetaDataLoader(test_set, batch_size = config.batch_size, shuffle=True)
+    train_loader = BatchMetaDataLoader(train_set, batch_size=config.meta_batch, shuffle=True)
+    val_loader = BatchMetaDataLoader(val_set, batch_size = config.meta_batch, shuffle=True)
+    test_loader = BatchMetaDataLoader(test_set, batch_size = config.meta_batch, shuffle=True)
 
     dataloloader = {}
     dataloloader['meta_train'] = train_loader

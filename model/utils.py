@@ -1,9 +1,10 @@
 import numpy as np
 from numpy.linalg import svd
 
-"""import cupy as cp
+import cupy as cp
 from cupy.linalg import svd as svd_gpu
-from cupy import core"""
+from cupy import core
+
 
 def rank(A, atol=1e-13, rtol=0):
     A = np.atleast_2d(A)
@@ -11,6 +12,7 @@ def rank(A, atol=1e-13, rtol=0):
     tol = max(atol, rtol*s[0])
     rank = int((s >= tol).sum())
     return rank
+
 
 def nullspace(A, tol=1e-13):
     A=np.atleast_2d(A)
@@ -24,10 +26,10 @@ def nullspace(A, tol=1e-13):
         ns = np.transpose(vh[:,nnz:,:].conj(), axes=[0,2,1])
     return ns
 
-"""
+
 def nullspace_gpu(A, tol=1e-13):
     A = cp.atleast_2d(A)
     u, s, vh =svd_gpu(A)
     nnz = (s >=  tol).sum()
     ns = vh[nnz:].conj().T
-    return ns """
+    return ns
