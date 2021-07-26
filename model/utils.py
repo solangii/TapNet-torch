@@ -3,7 +3,6 @@ from numpy.linalg import svd
 
 import cupy as cp
 from cupy.linalg import svd as svd_gpu
-from cupy import core
 
 
 def rank(A, atol=1e-13, rtol=0):

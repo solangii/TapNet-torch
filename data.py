@@ -19,7 +19,7 @@ def data_loader(config):
 
         # ToDo : shuffle, metasplit 각 옵션 정확하게 숙지
         # Todo : validation way를 test와 동일하게 하나
-        train_set = miniimagenet(config.data_root, ways=config.n_class_train, shots= config.n_shot, test_shots=config.n_query_train,
+        train_set = miniimagenet(config.data_root, ways=config.n_class_train, shots=config.n_shot, test_shots=config.n_query_train,
                                 meta_split='train', shuffle=True, download=True,
                                 transform=transform)
         val_set = miniimagenet(config.data_root, ways=config.n_class_test, shots=config.n_shot, test_shots=config.n_query_test,
@@ -68,9 +68,9 @@ def data_loader(config):
     else:
         raise ValueError
 
-    train_loader = BatchMetaDataLoader(train_set, batch_size=config.meta_batch, shuffle=True)
-    val_loader = BatchMetaDataLoader(val_set, batch_size = config.meta_batch, shuffle=True)
-    test_loader = BatchMetaDataLoader(test_set, batch_size = config.meta_batch, shuffle=True)
+    train_loader = BatchMetaDataLoader(train_set, batch_size=config.meta_batch, shuffle=True, num_workers=10, pin_memory=True)
+    val_loader = BatchMetaDataLoader(val_set, batch_size=config.meta_batch, shuffle=True, num_workers=10, pin_memory=True)
+    test_loader = BatchMetaDataLoader(test_set, batch_size=config.meta_batch, shuffle=True, num_workers=10, pin_memory=True)
 
     dataloloader = {}
     dataloloader['meta_train'] = train_loader

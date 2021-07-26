@@ -25,7 +25,8 @@ def parser_args():
 
     # train parameter
     parser.add_argument('--dim', type=int, default=512, help='Dimension of features')
-    parser.add_argument('--n_episodes', type=int, default=50000, help = 'Number of train episodes')
+    parser.add_argument('--n_train_episodes', type=int, default=50000, help = 'Number of train episodes')
+    parser.add_argument('--n_val_episodes', type=int, default=600, help='Number of validation episodes')
     parser.add_argument('--meta_batch', type=int, default=1, help='Meta-batch size (number of episodes, but not used in here)')
     parser.add_argument('--wd_rate', type=float, default=5e-4, help='Weight decay rate in Adam optimizer')
     parser.add_argument('--lr', type=float, default=1e-3)
