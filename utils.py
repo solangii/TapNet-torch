@@ -7,8 +7,10 @@ def str2bool(v):
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
-def experiment_name_generator(config):
-    #few_shot_setting = f"{str(config.n_way)}way_{str(config.n_shot)}shot_{str(config.n_query)}query"
-    #training_params = f"{str(config.glocal_layers)}Layers_{str(config.graph_node_dim)}dim"
-    #name = f"{few_shot_setting}_{training_params}"
-    return None
+def experiment_name_generator(config, info=None):
+    name = f"{str(config.dataset)}_{str(config.n_class_train)}way_{str(config.n_shot)}shot"
+
+    if info is not None:
+        name = f"{name}+{str(info)}"
+
+    return name
