@@ -7,15 +7,32 @@ Original Code : https://github.com/istarjun/TapNet
 ## Dependencies
 
 ```
-python == 3.6
+python == 3.6.13
 torch == 1.8.1
 torchmeta == 1.7.0
 cupy == 9.2.0
 ```
 
-## Running the code
+### Conda enviornment
 
+```
+conda env create -f TapNet-torch.yaml
+source activate TapNet
+```
 
+### pip dependency
+
+```
+pip install -r requirements.txt
+```
+
+## How to run
+
+```
+python main.py --[optional arguments] [value]
+```
+
+See function `parser_args()` in `main.py` file for detailed option arguments.
 
 ## Result
 
