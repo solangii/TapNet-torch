@@ -3,31 +3,31 @@ from torchmeta.utils.data import BatchMetaDataLoader
 
 import torchvision
 from torchvision import transforms
-import torch
 
 
 # torch meta : https://github.com/tristandeleu/pytorch-meta
 
-#Todo tiered, omniglot normalize 값
+#Todo tiered, omniglot normalize 값 .
 
 def data_loader(config):
     if config.dataset == 'mini':
         transform = transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
 
         # ToDo : shuffle, metasplit 각 옵션 정확하게 숙지
-        # Todo : validation way를 test와 동일하게 하나
-        train_set = miniimagenet(config.data_root, ways=config.n_class_train, shots=config.n_shot, test_shots=config.n_query_train,
-                                meta_split='train', shuffle=True, download=True,
-                                transform=transform)
-        val_set = miniimagenet(config.data_root, ways=config.n_class_test, shots=config.n_shot, test_shots=config.n_query_test,
-                              meta_split='val', shuffle=True, download = True,
-                              transform=transform)
-        test_set = miniimagenet(config.data_root, ways=config.n_class_test, shots=config.n_shot, test_shots=config.n_query_test,
-                               meta_split='test', shuffle=True, download =True,
+        train_set = miniimagenet(config.data_root, ways=config.n_class_train, shots=config.n_shot,
+                                 test_shots=config.n_query_train,
+                                 meta_split='train', shuffle=True, download=True)
+        val_set = miniimagenet(config.data_root, ways=config.n_class_test, shots=config.n_shot,
+                               test_shots=config.n_query_test,
+                               meta_split='val', shuffle=True, download=True,
                                transform=transform)
+        test_set = miniimagenet(config.data_root, ways=config.n_class_test, shots=config.n_shot,
+                                test_shots=config.n_query_test,
+                                meta_split='test', shuffle=True, download=True,
+                                transform=transform)
 
     elif config.dataset =='tiered':
         transform = transforms.Compose([
@@ -36,17 +36,17 @@ def data_loader(config):
         ])
 
         train_set = tieredimagenet(config.data_root, ways=config.n_class_train, shots=config.n_shot,
-                                 test_shots=config.n_query_train,
-                                 meta_split='train', shuffle=True, download=True,
-                                 transform=transform)
+                                   test_shots=config.n_query_train,
+                                   meta_split='train', shuffle=True, download=True,
+                                   transform=transform)
         val_set = tieredimagenet(config.data_root, ways=config.n_class_test, shots=config.n_shot,
-                               test_shots=config.n_query_test,
-                               meta_split='val', shuffle=True, download=True,
-                               transform=transform)
+                                 test_shots=config.n_query_test,
+                                 meta_split='val', shuffle=True, download=True,
+                                 transform=transform)
         test_set = tieredimagenet(config.data_root, ways=config.n_class_test, shots=config.n_shot,
-                                test_shots=config.n_query_test,
-                                meta_split='test', shuffle=True, download=True,
-                                transform=transform)
+                                  test_shots=config.n_query_test,
+                                  meta_split='test', shuffle=True, download=True,
+                                  transform=transform)
 
     elif config.dataset == 'omniglot':
         transform = transforms.Compose([

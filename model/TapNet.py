@@ -5,12 +5,13 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 import torch.backends.cudnn as cudnn
+#from torch.utils.tensorboard import SummaryWriter
 
 import numpy as np
 import cupy as cp
 
 from model.model_ResNet12 import EmbeddingNet
-from model.utils import nullspace_gpu
+from model.utils import nullspace_torch
 
 
 class TapNet:
@@ -31,16 +32,17 @@ class TapNet:
             self.EmbeddingNet = nn.DataParallel(self.EmbeddingNet)
             cudnn.benchmark = True
 
-        self.optimizer = optim.Adam(self.EmbeddingNet.parameters(), lr=self.config.lr) #Todo wd 는 어디에?
+        self.optimizer = optim.Adam(list(self.EmbeddingNet.parameters()), lr=self.config.lr) #Todo wd 넣
         self.criterion = nn.CrossEntropyLoss()
 
         self.exp_name = exp_name
+
+        #self.writer = SummaryWriter('tensorboard/')
 
     def train(self):
         train_loss, accuracy_val = [], []
 
         acc_best = 0
-        epi_best = 0
 
         for idx, episode in enumerate(self.dataloader['meta_train']):
             if idx == self.config.n_train_episodes:
@@ -54,11 +56,14 @@ class TapNet:
             query_data, query_label = query_data.to(self.device), query_label.to(self.device)
             self.EmbeddingNet.train()
 
+            support_data.requires_grad = True
+            query_data.requires_grad = True
+
             support_key = self.EmbeddingNet.forward(support_data.squeeze()) # Tensor shape : [25, 512]
             query_key = self.EmbeddingNet.forward(query_data.squeeze()) # Tensor shape : [40, 512]
             average_key = torch.mean(torch.reshape(support_key, (self.n_shot, self.n_class_train, -1)), dim=0) # Tensor shape : [5, 512]
 
-            M = self.projection_space_simple(average_key, self.n_class_train).to(self.device)
+            M = self.projection_space(average_key, self.n_class_train)
             query_M = torch.matmul(query_key, M)
             classifier_M = torch.matmul(self.EmbeddingNet.phi.weight, M)
 
@@ -67,25 +72,11 @@ class TapNet:
             loss.backward()
             self.optimizer.step()
 
-            """batchsize_q = len(query_key.data) # 40
-            M = self.Projection_Space(average_key, batchsize_q, self.n_class_train).to(self.device) # Tensor shape : [40, 512, 507]
-            r_t_temp = torch.matmul(M.permute(0, 2, 1).contiguous(), torch.unsqueeze(query_key, dim=2)) # Tensor shape : [40, 507, 1]
-            r_t = torch.matmul(M,r_t_temp).squeeze() # Tensor shape : [40, 507]
-            pow_t = self.compute_power(batchsize_q, query_key, M, self.n_class_train)
-
-            labels = query_label.squeeze()
-            u = 2 * self.EmbeddingNet.phi(r_t) - pow_t
-
-            loss = self.criterion(u, labels)
-            loss.backward()
-
-            self.optimizer.step()"""
-
-
             # ----------------------------------
 
             if idx % 50 == 0:
                 print("Episode: %d, Train Loss: %f " % (idx, loss))
+                #self.writer.add_scalar('training loss', loss, idx)
 
             if idx != 0 and idx % 500 == 0:
                 print("Evaluation in Validation data")
@@ -133,34 +124,18 @@ class TapNet:
                 pow_avg = self.compute_power_avg_phi(average_key, train=False)
                 phi_ind = [np.int(ind) for ind in self.select_phi(average_key, pow_avg)]
 
-                M = self.projection_space_simple(average_key, self.n_class_test, train=False, phi_ind=phi_ind).to(self.device)
+                M = self.projection_space(average_key, self.n_class_test, train=False, phi_ind=phi_ind)
                 query_M = torch.matmul(query_key, M)
                 classifier_M = torch.matmul(self.EmbeddingNet.phi.weight, M)
 
-                accs_tmp = self.compute_accuracy_simple(query_label, query_M, classifier_M, phi_ind=phi_ind)
+                accs_tmp = self.compute_accuracy(query_label, query_M, classifier_M, phi_ind=phi_ind)
                 accs.append(accs_tmp)
 
-
-                """batchsize_q = len(query_key.data)  # 40
-                pow_avg = self.compute_power_avg_phi(average_key, train=False)
-
-                phi_ind = [ind for ind in self.select_phi(average_key, pow_avg)]
-
-                M = self.Projection_Space(average_key, batchsize_q, self.n_class_test, train=False, phi_ind=phi_ind).to(self.device)
-                r_t_temp = torch.matmul(M.permute(0, 2, 1).contiguous(),torch.unsqueeze(query_key, dim=2))  # Tensor shape : [40, 507, 1]
-                r_t = torch.matmul(M, r_t_temp).squeeze()  # Tensor shape : [40, 507]
-
-                pow_t = self.compute_power(batchsize_q, query_key, M, self.n_class_test, train=False, phi_ind=phi_ind)
-
-                #accs_tmp = self.compute_accuracy(query_label, r_t, pow_t, batchsize_q, self.n_class_test, phi_ind=phi_ind)
-                #accs.append(accs_tmp)"""
-
-        # Todo accs 평균내기
         accs = torch.cuda.FloatTensor(accs)
         acc = torch.mean(accs)
         return acc
 
-    def projection_space_simple(self, average_key, n_class, train=True, phi_ind=None):
+    def projection_space(self, average_key, n_class, train=True, phi_ind=None):
         c_t = average_key
         eps = 1e-6
 
@@ -182,33 +157,7 @@ class TapNet:
         c_tmp = c_t / (power_c + eps)
 
         null = Phi - c_tmp
-        M = torch.tensor(nullspace_gpu(null.data))
-        return M
-
-    def Projection_Space(self, average_key, batchsize, n_class, train=True, phi_ind=None):
-        c_t = average_key
-        eps=1e-6
-
-        if train:
-            Phi_tmp = self.EmbeddingNet.phi.weight
-        else:
-            Phi_data = self.EmbeddingNet.phi.weight.data
-            Phi_tmp = torch.cuda.FloatTensor(Phi_data[phi_ind, :])
-
-        Phi_sum = Phi_tmp.sum(dim=0)
-        Phi = n_class*Phi_tmp - Phi_sum
-
-        power_Phi = torch.sqrt(torch.sum(Phi*Phi, 1))
-        power_Phi = torch.t(power_Phi.expand(self.dim, n_class))
-        Phi = Phi / (power_Phi + eps)
-
-        power_c = torch.sqrt(torch.sum(c_t * c_t, 1))
-        power_c = torch.t(power_c.expand(self.dim, n_class))
-        c_tmp = c_t/(power_c + eps)
-
-        null = Phi - c_tmp
-        M = nullspace_gpu(null.data)
-        M = torch.tensor(M).expand(batchsize, self.dim, self.dim-n_class)
+        M = nullspace_torch(null)
         return M
 
     def compute_power(self, batchsize, key, M, n_class, train=False, phi_ind=None):
@@ -242,24 +191,6 @@ class TapNet:
 
         return pow_avg
 
-    def compute_accuracy(self, t_data, r_t, pow_t, batchsize, n_class, phi_ind=None):
-        ro = 2*self.EmbeddingNet.phi(r_t)
-        ro_t = torch.cuda.FloatTensor(ro.data[:, phi_ind])
-        u = ro_t-pow_t
-        t_est = cp.argmax(nn.Softmax(u).data)
-
-        return t_est == cp.array(t_data)
-
-    def compute_accuracy_simple(self, t_data, query, classifier, phi_ind=None):
-        #         labels = label.squeeze()
-        labels = t_data.squeeze()
-        logits = self.compute_euclidean(query, classifier)[:, phi_ind]
-        t_est = torch.argmax(F.softmax(logits), dim=1)
-
-        result = (t_est == labels)
-        acc = torch.sum(result == True) / labels.shape[0]
-        return acc
-
     def select_phi(self, average_key, avg_pow):
         u_avg = 2*self.EmbeddingNet.phi(average_key).data
         u_avg = u_avg - avg_pow.data
@@ -276,6 +207,31 @@ class TapNet:
                 phi_ind[i] = np.int(u_avg_ind[i,k])
         return phi_ind.tolist()
 
+    def compute_euclidean(self, keys, weight):
+        """Computes the logits of being in one cluster, squared Euclidean.
+                Args:
+                weight: [K, D] Cluster center representation.
+                keys: [N, D] Data representation.
+                """
+        weight = weight.unsqueeze(0)
+        keys = keys.unsqueeze(1)
+        neg_dist = -torch.sum(torch.square(keys - weight), dim=-1)
+        return neg_dist
+
+    def compute_loss(self, label, query, classifier):
+        labels = label.squeeze()
+        logits = self.compute_euclidean(query, classifier)
+        return self.criterion(logits, labels)
+
+    def compute_accuracy(self, t_data, query, classifier, phi_ind=None):
+        labels = t_data.squeeze()
+        logits = self.compute_euclidean(query, classifier)[:, phi_ind]
+        t_est = torch.argmax(F.softmax(logits), dim=1)
+
+        result = (t_est == labels)
+        acc = torch.sum(result == True) / labels.shape[0]
+        return acc
+
     def save_model(self, acc, idx):
         state = {
             'net': self.EmbeddingNet.state_dict(),
@@ -291,25 +247,11 @@ class TapNet:
     def load_model(self, path):
         self.EmbeddingNet = torch.load(path)
 
-    def compute_loss(self, label, query, classifier):
-        labels = label.squeeze()
-        logits = self.compute_euclidean(query, classifier)
-        return self.criterion(logits, labels)
-
-    def compute_euclidean(self, keys, weight):
-        """Computes the logits of being in one cluster, squared Euclidean.
-                Args:
-                weight: [K, D] Cluster center representation.
-                keys: [N, D] Data representation.
-                """
-
-        weight = weight.unsqueeze(0)
-        keys = keys.unsqueeze(1)
-        neg_dist = -torch.sum(torch.square(keys - weight), dim=-1)
-        return neg_dist
 """
     def decay_learning_rate(self, decaying_parameter=0.5):
         self.optimizer.weight = self.optimizer.lr * decaying_parameter"""
+
+
 
 
 

@@ -4,6 +4,9 @@ from numpy.linalg import svd
 import cupy as cp
 from cupy.linalg import svd as svd_gpu
 
+import torch
+from torch.linalg import svd as svd_torch
+
 
 def rank(A, atol=1e-13, rtol=0):
     A = np.atleast_2d(A)
@@ -30,5 +33,12 @@ def nullspace_gpu(A, tol=1e-13):
     A = cp.atleast_2d(A)
     u, s, vh =svd_gpu(A)
     nnz = (s >=  tol).sum()
+    ns = vh[nnz:].conj().T
+    return ns
+
+def nullspace_torch(A, tol=1e-13):
+    A = torch.atleast_2d(A)
+    u, s, vh = svd_torch(A)
+    nnz = (s >= tol).sum()
     ns = vh[nnz:].conj().T
     return ns

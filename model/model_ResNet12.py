@@ -50,7 +50,7 @@ class EmbeddingNet(nn.Module):
                                      nn.BatchNorm2d(512))
         self.pool4 = nn.Sequential(nn.MaxPool2d(kernel_size=2),
                                    nn.Dropout2d(p=0.2),
-                                   nn.AvgPool2d(kernel_size=5)) # 6dmfh
+                                   nn.AvgPool2d(kernel_size=5)) # 6 error,,,,,
 
         self.phi = nn.Linear(dim, n_class_train)
 
