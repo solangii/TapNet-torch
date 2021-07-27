@@ -2,7 +2,7 @@
 
 An unofficial Code for ICML 2019 paper TapNet: Neural Network Augmented with Task-Adaptive Projection for Few-Shot Learning in PyTorch. [![arXiv](https://img.shields.io/badge/arXiv-1905.06549-f9f107.svg)](https://arxiv.org/abs/1905.06549)
 
-Original Code : https://github.com/istarjun/TapNet
+Original Code (Chainer) : https://github.com/istarjun/TapNet
 
 ## Dependencies
 
@@ -29,10 +29,10 @@ pip install -r requirements.txt
 ## How to run
 
 ```
-python main.py --[optional arguments] [value]
+python main.py --[optional_arguments value]
 ```
 
-See function `parser_args()` in `main.py` file for detailed option arguments.
+See function `parser_args()` in `main.py` file for **detailed optional arguments**.
 
 ## Result
 
