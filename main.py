@@ -25,7 +25,7 @@ def parser_args():
     # Few-shot parameter
     # ------------------------------------------------
     parser.add_argument('--n_shot', type=int, default=5, help='Number of training samples per class')
-    parser.add_argument('--n_class_train', type=int, default=5, help='Number of training classes')
+    parser.add_argument('--n_class_train', type=int, default=20, help='Number of training classes')
     parser.add_argument('--n_class_test', type=int, default=5, help='Number of test classes')
     parser.add_argument('--n_query_train', type=int, default=8, help='Number of queries per class in training')
     parser.add_argument('--n_query_test', type=int, default=15, help='Number of queries per class in test')
@@ -35,10 +35,11 @@ def parser_args():
     parser.add_argument('--dim', type=int, default=512, help='Dimension of features')
     parser.add_argument('--n_train_episodes', type=int, default=50000, help = 'Number of train episodes')
     parser.add_argument('--n_val_episodes', type=int, default=600, help='Number of validation episodes')
+    parser.add_argument('--n_test_episodes', type=int, default=600, help='Number of test episodes')
     parser.add_argument('--meta_batch', type=int, default=1, help='Meta-batch size (number of episodes, but not used in here)')
     parser.add_argument('--wd_rate', type=float, default=5e-4, help='Weight decay rate in Adam optimizer')
     parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
-    parser.add_argument('--lr_decay', type=str2bool, default=True, help='Use weight decay')
+    parser.add_argument('--lr_decay', type=str2bool, default=True, help='Use learning rate decay')
     parser.add_argument('--lr_step', type=int, default=40000)
 
     # save option

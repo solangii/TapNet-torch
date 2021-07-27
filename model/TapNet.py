@@ -24,6 +24,8 @@ class TapNet:
         self.n_shot = config.n_shot
         self.n_class_train = config.n_class_train
         self.n_class_test = config.n_class_test
+        self.n_query_train = config.n_query_train
+        self.n_query_test = config.n_query_test
         self.dim = config.dim
 
         self.EmbeddingNet = EmbeddingNet(self.dim, self.n_class_train).to(self.device)
@@ -51,8 +53,9 @@ class TapNet:
             self.optimizer.zero_grad()
 
             support_data, support_label = episode['train'] # Tensor shape : [1,25,3,84,84]
-            query_data, query_label = episode['test'] # Tensor shape : [1,40,3,84,84]
+            query_data, _ = episode['test'] # Tensor shape : [1,40,3,84,84]
             support_data, support_label = support_data.to(self.device), support_label.to(self.device)
+            query_label = torch.tensor([i for i in range(self.n_class_train) for _ in range(self.n_query_train)])
             query_data, query_label = query_data.to(self.device), query_label.to(self.device)
             self.EmbeddingNet.train()
 
@@ -61,7 +64,7 @@ class TapNet:
 
             support_key = self.EmbeddingNet.forward(support_data.squeeze()) # Tensor shape : [25, 512]
             query_key = self.EmbeddingNet.forward(query_data.squeeze()) # Tensor shape : [40, 512]
-            average_key = torch.mean(torch.reshape(support_key, (self.n_shot, self.n_class_train, -1)), dim=0) # Tensor shape : [5, 512]
+            average_key = torch.mean(torch.reshape(support_key, (self.n_class_train, self.n_shot, -1)), dim=1) # Tensor shape : [5, 512]
 
             M = self.projection_space(average_key, self.n_class_train)
             query_M = torch.matmul(query_key, M)
@@ -74,11 +77,11 @@ class TapNet:
 
             # ----------------------------------
 
-            if idx % 50 == 0:
+            if idx % 200 == 0:
                 print("Episode: %d, Train Loss: %f " % (idx, loss))
                 #self.writer.add_scalar('training loss', loss, idx)
 
-            if idx != 0 and idx % 500 == 0:
+            if idx != 0 and idx % 1000 == 0:
                 print("Evaluation in Validation data")
                 acc = self.evaluate()
 
@@ -112,14 +115,15 @@ class TapNet:
                     break
 
                 support_data, support_label = episode['train']
-                query_data, query_label = episode['test']
+                query_data, _ = episode['test']
                 support_data, support_label = support_data.to(self.device), support_label.to(self.device)
+                query_label = torch.tensor([i for i in range(self.n_class_test) for _ in range(self.n_query_test)])
                 query_data, query_label = query_data.to(self.device), query_label.to(self.device)
                 self.EmbeddingNet.eval()
 
                 support_key = self.EmbeddingNet.forward(support_data.squeeze())  # Tensor shape : [25, 512]
                 query_key = self.EmbeddingNet.forward(query_data.squeeze())  # Tensor shape : [40, 512]
-                average_key = torch.mean(torch.reshape(support_key, (self.n_shot, self.n_class_test, -1)), dim=0)  # Tensor shape : [5, 512]
+                average_key = torch.mean(torch.reshape(support_key, (self.n_class_test, self.n_shot, -1)), dim=1)  # Tensor shape : [5, 512]
 
                 pow_avg = self.compute_power_avg_phi(average_key, train=False)
                 phi_ind = [np.int(ind) for ind in self.select_phi(average_key, pow_avg)]
@@ -218,13 +222,11 @@ class TapNet:
         neg_dist = -torch.sum(torch.square(keys - weight), dim=-1)
         return neg_dist
 
-    def compute_loss(self, label, query, classifier):
-        labels = label.squeeze()
+    def compute_loss(self, labels, query, classifier):
         logits = self.compute_euclidean(query, classifier)
         return self.criterion(logits, labels)
 
-    def compute_accuracy(self, t_data, query, classifier, phi_ind=None):
-        labels = t_data.squeeze()
+    def compute_accuracy(self, labels, query, classifier, phi_ind=None):
         logits = self.compute_euclidean(query, classifier)[:, phi_ind]
         t_est = torch.argmax(F.softmax(logits), dim=1)
 
