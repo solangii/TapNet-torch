@@ -7,46 +7,46 @@ class EmbeddingNet(nn.Module):
     def __init__(self, dim, n_class_train):
         super(EmbeddingNet, self).__init__()
 
-        self.conv1 = nn.Sequential(nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, padding=1, bias=False),
+        self.conv1 = nn.Sequential(nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, padding=1),
                                    nn.BatchNorm2d(num_features=64),
-                                   nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1, bias=False),
+                                   nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1),
                                    nn.BatchNorm2d(num_features=64),
-                                   nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1, bias=False),
+                                   nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1),
                                    nn.BatchNorm2d(num_features=64))
-        self.conv1_r = nn.Sequential(nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, padding=1, bias=False),
+        self.conv1_r = nn.Sequential(nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, padding=1),
                                      nn.BatchNorm2d(num_features=64))
         self.pool1 = nn.Sequential(nn.MaxPool2d(kernel_size=2),
                                    nn.Dropout2d(p=0.3))
 
-        self.conv2 = nn.Sequential(nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1, bias=False),
+        self.conv2 = nn.Sequential(nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1),
                                    nn.BatchNorm2d(128),
-                                   nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, padding=1, bias=False),
+                                   nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, padding=1),
                                    nn.BatchNorm2d(128),
-                                   nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, padding=1, bias=False),
+                                   nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, padding=1),
                                    nn.BatchNorm2d(128))
-        self.conv2_r = nn.Sequential(nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1, bias=False),
+        self.conv2_r = nn.Sequential(nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1),
                                      nn.BatchNorm2d(128))
         self.pool2 = nn.Sequential(nn.MaxPool2d(kernel_size=2),
                                    nn.Dropout2d(p=0.2))
 
-        self.conv3 = nn.Sequential(nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, padding=1, bias=False),
+        self.conv3 = nn.Sequential(nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, padding=1),
                                    nn.BatchNorm2d(256),
-                                   nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, padding=1, bias=False),
+                                   nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, padding=1),
                                    nn.BatchNorm2d(256),
-                                   nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, padding=1, bias=False),
+                                   nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, padding=1),
                                    nn.BatchNorm2d(256))
-        self.conv3_r = nn.Sequential(nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, padding=1, bias=False),
+        self.conv3_r = nn.Sequential(nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, padding=1),
                                      nn.BatchNorm2d(256))
         self.pool3 = nn.Sequential(nn.MaxPool2d(kernel_size=2),
                                    nn.Dropout2d(p=0.2))
 
-        self.conv4 = nn.Sequential(nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, padding=1, bias=False),
+        self.conv4 = nn.Sequential(nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, padding=1),
                                    nn.BatchNorm2d(512),
-                                   nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, padding=1, bias=False),
+                                   nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, padding=1),
                                    nn.BatchNorm2d(512),
-                                   nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, padding=1, bias=False),
+                                   nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, padding=1),
                                    nn.BatchNorm2d(512))
-        self.conv4_r = nn.Sequential(nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, padding=1, bias=False),
+        self.conv4_r = nn.Sequential(nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, padding=1),
                                      nn.BatchNorm2d(512))
         self.pool4 = nn.Sequential(nn.MaxPool2d(kernel_size=2),
                                    nn.Dropout2d(p=0.2),

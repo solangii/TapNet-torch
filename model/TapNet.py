@@ -33,7 +33,12 @@ class TapNet:
             self.EmbeddingNet = nn.DataParallel(self.EmbeddingNet)
             cudnn.benchmark = True
 
-        self.optimizer = optim.Adam(list(self.EmbeddingNet.parameters()), lr=self.config.lr, weight_decay=self.config.wd_rate)
+        self.optimizer = optim.Adam(list(self.EmbeddingNet.parameters()),
+                                    lr=self.config.lr,
+                                    weight_decay=self.config.wd_rate)
+        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer,
+                                                   step_size=self.config.lr_step,
+                                                   gamma=self.config.lr_decay)
         self.criterion = nn.CrossEntropyLoss()
 
         self.exp_name = exp_name
@@ -72,6 +77,7 @@ class TapNet:
             train_loss.append(loss.item())
             loss.backward()
             self.optimizer.step()
+            self.scheduler.step()
 
             # ----------------------------------
 
@@ -90,9 +96,6 @@ class TapNet:
                     epi_best = idx
                 accuracy_val.extend([acc.tolist()])
                 print("Validation accuracy : %f " % (acc))
-
-            #if idx != 0 and idx % self.config.lr_step == 0 and self.config.lr_decay:
-            #    self.decay_learning_rate(0.1)
 
         print('-'*50)
         print("Best Episode index is %d, Best Accuracy is %d", epi_best, acc_best)
@@ -255,10 +258,6 @@ class TapNet:
     def load_model(self, path):
         #self.EmbeddingNet = torch.load(path)
         self.EmbeddingNet.load_state_dict(torch.load(path))
-
-"""
-    def decay_learning_rate(self, decaying_parameter=0.5):
-        self.optimizer.weight = self.optimizer.lr * decaying_parameter"""
 
 
 

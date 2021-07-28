@@ -14,7 +14,7 @@ def parser_args():
 
     # gpu parameter
     # ------------------------------------------------
-    parser.add_argument('--n_gpu', type=int, default=5, help='GPU number to use')
+    parser.add_argument('--n_gpu', type=int, default=0, help='GPU number to use')
     parser.add_argument('--use_parallel', type=str2bool, default=False, help='Whether to use all GPU')
 
     # data parameter
@@ -40,7 +40,7 @@ def parser_args():
     parser.add_argument('--meta_batch', type=int, default=1, help='Meta-batch size (number of episodes, but not used in here)')
     parser.add_argument('--wd_rate', type=float, default=5e-4, help='Weight decay rate in Adam optimizer')
     parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
-    parser.add_argument('--lr_decay', type=str2bool, default=True, help='Use learning rate decay')
+    parser.add_argument('--lr_decay', type=int, default=0.1, help='Decaying parameter of learning rate')
     parser.add_argument('--lr_step', type=int, default=40000)
 
     # save option
@@ -65,7 +65,7 @@ def main():
 
     model = TapNet(config, dataloader, exp_name)
 
-    #model.train()
+    model.train()
     model.test()
 
 

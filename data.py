@@ -19,7 +19,8 @@ def data_loader(config):
         # ToDo : shuffle, metasplit 각 옵션 정확하게 숙지
         train_set = miniimagenet(config.data_root, ways=config.n_class_train, shots=config.n_shot,
                                  test_shots=config.n_query_train,
-                                 meta_split='train', shuffle=True, download=True)
+                                 meta_split='train', shuffle=True, download=True,
+                                 transform=transform)
         val_set = miniimagenet(config.data_root, ways=config.n_class_test, shots=config.n_shot,
                                test_shots=config.n_query_test,
                                meta_split='val', shuffle=True, download=True,
