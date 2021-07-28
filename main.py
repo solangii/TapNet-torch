@@ -19,12 +19,12 @@ def parser_args():
 
     # data parameter
     # ------------------------------------------------
-    parser.add_argument('--data_root', type=str, default='/home/solangii/TapNet/data/', help='')
+    parser.add_argument('--data_root', type=str, default='data/', help='')
     parser.add_argument('--dataset', type=str, default='mini', help='Dataset')
 
     # Few-shot parameter
     # ------------------------------------------------
-    parser.add_argument('--n_shot', type=int, default=5, help='Number of training samples per class')
+    parser.add_argument('--n_shot', type=int, default=1, help='Number of training samples per class')
     parser.add_argument('--n_class_train', type=int, default=20, help='Number of training classes')
     parser.add_argument('--n_class_test', type=int, default=5, help='Number of test classes')
     parser.add_argument('--n_query_train', type=int, default=8, help='Number of queries per class in training')
@@ -36,7 +36,7 @@ def parser_args():
     parser.add_argument('--n_train_episodes', type=int, default=50000, help = 'Number of train episodes')
     parser.add_argument('--n_val_episodes', type=int, default=600, help='Number of validation episodes')
     parser.add_argument('--n_test_episodes', type=int, default=600, help='Number of test episodes')
-    parser.add_argument('--n_test_iter', type=int, default=50, help = 'Iteration number for test')
+    parser.add_argument('--n_test_iter', type=int, default=1, help = 'Iteration number for test')
     parser.add_argument('--meta_batch', type=int, default=1, help='Meta-batch size (number of episodes, but not used in here)')
     parser.add_argument('--wd_rate', type=float, default=5e-4, help='Weight decay rate in Adam optimizer')
     parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
@@ -47,6 +47,10 @@ def parser_args():
     # ------------------------------------------------
     parser.add_argument('--save_root', type=str, default='ckpt/', help='save path for best ckpt')
     parser.add_argument('--info', type=str, default=None, help='Additional notes in the experimental name')
+
+    # test option
+    # ------------------------------------------------
+    parser.add_argument('--PATH', type=str, default=None, help='Checkpoint path of the model to test')
 
     # ------------------------------------------------
     config = parser.parse_args()

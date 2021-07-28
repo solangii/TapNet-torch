@@ -98,7 +98,7 @@ class TapNet:
                 print("Validation accuracy : %f " % (acc))
 
         print('-'*50)
-        print("Best Episode index is %d, Best Accuracy is %d", epi_best, acc_best)
+        print("Best Episode index is %d, Best Accuracy is %f" % (epi_best, acc_best))
 
     def evaluate(self, validation=True, PATH=None):
         if validation:
@@ -151,7 +151,7 @@ class TapNet:
         accuracy = torch.mean(torch.cuda.FloatTensor(accs))
 
         print('-' * 50)
-        print("Test Accuracy is %d", accuracy)
+        print("Test Accuracy is %.4f" %(accuracy.item()))
 
 
     def projection_space(self, average_key, n_class, train=True, phi_ind=None):
