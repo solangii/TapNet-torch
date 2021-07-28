@@ -36,6 +36,7 @@ def parser_args():
     parser.add_argument('--n_train_episodes', type=int, default=50000, help = 'Number of train episodes')
     parser.add_argument('--n_val_episodes', type=int, default=600, help='Number of validation episodes')
     parser.add_argument('--n_test_episodes', type=int, default=600, help='Number of test episodes')
+    parser.add_argument('--n_test_iter', type=int, default=50, help = 'Iteration number for test')
     parser.add_argument('--meta_batch', type=int, default=1, help='Meta-batch size (number of episodes, but not used in here)')
     parser.add_argument('--wd_rate', type=float, default=5e-4, help='Weight decay rate in Adam optimizer')
     parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
@@ -64,7 +65,9 @@ def main():
 
     model = TapNet(config, dataloader, exp_name)
 
-    model.train()
+    #model.train()
+    model.test()
+
 
 
 if __name__ == '__main__':

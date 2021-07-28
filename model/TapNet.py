@@ -5,7 +5,6 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 import torch.backends.cudnn as cudnn
-#from torch.utils.tensorboard import SummaryWriter
 
 import numpy as np
 import cupy as cp
@@ -34,12 +33,11 @@ class TapNet:
             self.EmbeddingNet = nn.DataParallel(self.EmbeddingNet)
             cudnn.benchmark = True
 
-        self.optimizer = optim.Adam(list(self.EmbeddingNet.parameters()), lr=self.config.lr) #Todo wd 넣
+        self.optimizer = optim.Adam(list(self.EmbeddingNet.parameters()), lr=self.config.lr, weight_decay=self.config.wd_rate)
         self.criterion = nn.CrossEntropyLoss()
 
         self.exp_name = exp_name
-
-        #self.writer = SummaryWriter('tensorboard/')
+        self.path = config.save_root + exp_name + '.pth'
 
     def train(self):
         train_loss, accuracy_val = [], []
@@ -79,7 +77,6 @@ class TapNet:
 
             if idx % 200 == 0:
                 print("Episode: %d, Train Loss: %f " % (idx, loss))
-                #self.writer.add_scalar('training loss', loss, idx)
 
             if idx != 0 and idx % 1000 == 0:
                 print("Evaluation in Validation data")
@@ -87,16 +84,18 @@ class TapNet:
 
                 if acc > acc_best:
                     print('save model')
-                    self.save_model(acc, idx)
+                    self.save_model()
 
                     acc_best = acc
                     epi_best = idx
                 accuracy_val.extend([acc.tolist()])
                 print("Validation accuracy : %f " % (acc))
 
-
             #if idx != 0 and idx % self.config.lr_step == 0 and self.config.lr_decay:
             #    self.decay_learning_rate(0.1)
+
+        print('-'*50)
+        print("Best Episode index is %d, Best Accuracy is %d", epi_best, acc_best)
 
     def evaluate(self, validation=True, PATH=None):
         if validation:
@@ -138,6 +137,19 @@ class TapNet:
         accs = torch.cuda.FloatTensor(accs)
         acc = torch.mean(accs)
         return acc
+
+    def test(self, path=None):
+        if path is None:
+            PATH = self.path
+        accs = []
+        for i in range(self.config.n_test_iter):
+            acc = self.evaluate(validation=False, PATH=PATH)
+            accs.append(acc)
+        accuracy = torch.mean(torch.cuda.FloatTensor(accs))
+
+        print('-' * 50)
+        print("Test Accuracy is %d", accuracy)
+
 
     def projection_space(self, average_key, n_class, train=True, phi_ind=None):
         c_t = average_key
@@ -234,20 +246,15 @@ class TapNet:
         acc = torch.sum(result == True) / labels.shape[0]
         return acc
 
-    def save_model(self, acc, idx):
-        state = {
-            'net': self.EmbeddingNet.state_dict(),
-            'acc': acc,
-            'idx': idx,
-        }
+    def save_model(self):
         if not os.path.isdir(self.config.save_root):
             os.mkdir(self.config.save_root)
 
-        name = self.config.save_root + self.exp_name + '.pth'
-        torch.save(state, name)
+        torch.save(self.EmbeddingNet.state_dict(), self.path)
 
     def load_model(self, path):
-        self.EmbeddingNet = torch.load(path)
+        #self.EmbeddingNet = torch.load(path)
+        self.EmbeddingNet.load_state_dict(torch.load(path))
 
 """
     def decay_learning_rate(self, decaying_parameter=0.5):
