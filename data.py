@@ -10,8 +10,8 @@ from torchvision import transforms
 def data_loader(config):
     if config.dataset == 'mini':
         transform = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+            transforms.ToTensor()
+            # transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
 
         train_set = miniimagenet(config.data_root, ways=config.n_class_train, shots=config.n_shot,
@@ -29,8 +29,8 @@ def data_loader(config):
 
     elif config.dataset =='tiered':
         transform = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize([120.39586422/255.0, 155.59361427/255.0, 104.54012653/255.0],[70.68188272/255.0, 68.27635443/255.0, 72.54505529/255.0])
+            transforms.ToTensor()
+            # transforms.Normalize([120.39586422/255.0, 155.59361427/255.0, 104.54012653/255.0],[70.68188272/255.0, 68.27635443/255.0, 72.54505529/255.0])
         ])
 
         train_set = tieredimagenet(config.data_root, ways=config.n_class_train, shots=config.n_shot,
