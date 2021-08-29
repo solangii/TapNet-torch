@@ -30,14 +30,15 @@ pip install -r requirements.txt
 
 ## How to run
 
-```
-python main.py 
+```bash
+python run_mini.py		# For mini-ImageNet experiment
+python run_tiered.py	# For tiered-ImageNet experiment
 ```
 
 ### Usage
 
 ```
-usage: main.py [-h] [--n_gpu N_GPU] [--use_parallel USE_PARALLEL]
+usage: run_{DATASET}.py [-h] [--n_gpu N_GPU] [--use_parallel USE_PARALLEL]
                [--data_root DATA_ROOT] [--dataset DATASET] [--n_shot N_SHOT]
                [--n_class_train N_CLASS_TRAIN] [--n_class_test N_CLASS_TEST]
                [--n_query_train N_QUERY_TRAIN] [--n_query_test N_QUERY_TEST]
@@ -79,13 +80,14 @@ optional arguments:
   --wd_rate WD_RATE     Weight decay rate in Adam optimizer
   --lr LR               Learning rate
   --lr_decay LR_DECAY   Use learning rate decay
-  --lr_step LR_STEP
+  --lr_step LR_STEP		Learning rate decaying steps
+  --drop_out DROP_OUT	Probability of drop out layer
   --save_root SAVE_ROOT
                         save path for best ckpt
   --info INFO           Additional notes in the experimental name
 ```
 
-See function `parser_args()` in `main.py` file for **detailed optional arguments**.
+See function `parser_args()` in `run_mini.py` or `run_tiered.py` file for **detailed optional arguments**.
 
 ## Result
 

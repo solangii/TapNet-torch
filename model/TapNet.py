@@ -26,8 +26,9 @@ class TapNet:
         self.n_query_train = config.n_query_train
         self.n_query_test = config.n_query_test
         self.dim = config.dim
+        self.drop_out = config.drop_out
 
-        self.EmbeddingNet = EmbeddingNet(self.dim, self.n_class_train).to(self.device)
+        self.EmbeddingNet = EmbeddingNet(self.dim, self.n_class_train, self.drop_out).to(self.device)
 
         if config.use_parallel:
             self.EmbeddingNet = nn.DataParallel(self.EmbeddingNet)
