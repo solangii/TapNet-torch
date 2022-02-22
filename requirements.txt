@@ -17,7 +17,7 @@ importlib-metadata==4.6.0
 Keras-Applications==1.0.8
 Keras-Preprocessing==1.1.2
 Markdown==3.3.4
-numpy==1.18.5
+numpy==1.21.0
 nvidia-cublas==11.2.1.74
 nvidia-cuda-cupti==11.1.69
 nvidia-cuda-nvcc==11.1.74
