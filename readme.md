@@ -4,6 +4,7 @@ An unofficial Code for ICML 2019 paper TapNet: Neural Network Augmented with Tas
 
 Original Code (Chainer) : https://github.com/istarjun/TapNet
 
+
 ## Dependencies
 
 ```
@@ -90,6 +91,9 @@ optional arguments:
 See function `parser_args()` in `run_mini.py` or `run_tiered.py` file for **detailed optional arguments**.
 
 ## Result
+```
+*Performance not reproduced*
+```
 
 ### Omniglot
 
